@@ -1,4 +1,4 @@
-# chasoman: This file is an edited version of the Dockerfile_aceonly
+# chasoman: This file is an edited version of the Dockerfile.aceonly
 # chasoman: I have made the edits to create an s2i builder image for ACE 11
 # chasoman: All edits have been tagged with 'chasoman:' comments
 
@@ -27,6 +27,7 @@ ARG ACE_INSTALL=11.0.0.7-ACE-LINUX64-DEVELOP.tar.gz
 WORKDIR /opt/ibm
 COPY deps/$ACE_INSTALL .
 RUN mkdir ace-11
+# chasoman: Removed the '--exclude ace-11.\*/tools' option because we need mqsicreatebar from tools directory to be able to compile source into bars.
 RUN tar -xzf $ACE_INSTALL --absolute-names --strip-components 1 --directory /opt/ibm/ace-11
 
 # chasoman: changed from redhat ubi 8 to centos 7
