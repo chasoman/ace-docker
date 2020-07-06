@@ -1,6 +1,6 @@
-# chasoman: This file is an edited version of the Dockerfile.aceonly
-# chasoman: I have made the edits to create an s2i builder image for ACE 11
-# chasoman: All edits have been tagged with 'chasoman:' comments
+# chasoman: This is a modified version of the ubi/Dockerfile.aceonly
+# chasoman: Modifications done for creating a s2i image
+# chasoman: All modifications are tagged with a 'chasoman:' comment
 
 FROM golang:1.14.2 as builder
 
@@ -22,16 +22,13 @@ RUN go test -v ./cmd/runaceserver/
 RUN go test -v ./internal/...
 RUN go vet ./cmd/... ./internal/...
 
-# chasoman: hard coded the ACE 11.0.0.7 Developers edition tar name
-ARG ACE_INSTALL=11.0.0.7-ACE-LINUX64-DEVELOP.tar.gz
+ARG ACE_INSTALL=ace-11.0.0.8.tar.gz
 WORKDIR /opt/ibm
 COPY deps/$ACE_INSTALL .
 RUN mkdir ace-11
-# chasoman: Removed the '--exclude ace-11.\*/tools' option because we need mqsicreatebar from tools directory to be able to compile source into bars.
-RUN tar -xzf $ACE_INSTALL --absolute-names --strip-components 1 --directory /opt/ibm/ace-11
+RUN tar -xzf $ACE_INSTALL --absolute-names --exclude ace-11.\*/tools --strip-components 1 --directory /opt/ibm/ace-11
 
-# chasoman: changed from redhat ubi 8 to centos 7
-FROM centos:7 
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 
 ENV SUMMARY="Integration Server for App Connect Enterprise" \
     DESCRIPTION="Integration Server for App Connect Enterprise" \
@@ -46,7 +43,7 @@ LABEL summary="$SUMMARY" \
       com.redhat.component="$PRODNAME-$COMPNAME" \
       name="$PRODNAME/$COMPNAME" \
       vendor="IBM" \
-      version="11.0.0.7" \
+      version="11.0.0.8" \
       release="1" \
       license="IBM" \
       maintainer="Hybrid Integration Platform Cloud" \
@@ -63,8 +60,7 @@ COPY deps/OpenTracing/config/* ./etc/ACEOpenTracing/
 
 WORKDIR /opt/ibm
 
-# chasoman: changed the microdnf install commands to yum install commands
-RUN  yum install -y findutils && yum install -y OpenIPMI-python 
+RUN microdnf install findutils util-linux unzip python2 && microdnf clean all
 COPY --from=builder /opt/ibm/ace-11 /opt/ibm/ace-11
 
 # Copy in PID1 process
@@ -77,8 +73,7 @@ COPY *.sh /usr/local/bin/
 # Install kubernetes cli
 COPY ubi/install-kubectl.sh /usr/local/bin/
 RUN chmod u+x /usr/local/bin/install-kubectl.sh \
-  && install-kubectl.sh \
-  && yum update -y
+  && install-kubectl.sh
 
 # Create a user to run as, create the ace workdir, and chmod script files
 RUN mkdir -p /var/mqsi \
@@ -101,5 +96,5 @@ ENV LOG_FORMAT=basic
 
 # Set entrypoint to run management script
 
-# chasoman: commented the entrypoint script because this will be run from the s2i/run script
+# chasoman: Commenting the ENTRYPOINT because this will be handled from the s2i/run script
 # ENTRYPOINT ["runaceserver"]
