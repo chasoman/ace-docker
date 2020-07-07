@@ -1,6 +1,6 @@
-# chasoman: This is a modified version of the ubi/Dockerfile.aceonly
-# chasoman: Modifications done for creating a s2i image
-# chasoman: All modifications are tagged with a 'chasoman:' comment
+#chasoman: An edited version of Dockerfile.aceonly
+#chasoman: The edits are made to create a base image for s2i tool
+#chasoman: All edits are tagged with the 'chasoman:' comment
 
 FROM golang:1.14.2 as builder
 
@@ -96,5 +96,6 @@ ENV LOG_FORMAT=basic
 
 # Set entrypoint to run management script
 
-# chasoman: Commenting the ENTRYPOINT because this will be handled from the s2i/run script
-# ENTRYPOINT ["runaceserver"]
+#chasoman: Commented the ENTRYPOINT line to prevent the server starting up during s2i command execution
+#chasoman: The s2i/scripts/run will execute the runaceserver command at the end 
+#ENTRYPOINT ["runaceserver"]

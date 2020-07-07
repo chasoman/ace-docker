@@ -3,6 +3,7 @@
 #chasoman: This script invokes the docker build command to create a base ACE11 image
 
 docker build \
-   -t chasoman/ace:latest \
+   -t chasoman/ace-s2i:latest \
    --build-arg ACE_INSTALL=11.0.0.7-ACE-LINUX64-DEVELOP.tar.gz \
+   --file ubi/Dockerfile.aceonly.s2i \
    .
